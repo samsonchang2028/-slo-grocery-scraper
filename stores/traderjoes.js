@@ -7,7 +7,8 @@ export const TARGET_LIST = [
     'eggs',
     'whole milk',
     'chicken breast',
-    
+    'bread',
+    'bananas',
 ];
 
 const USER_AGENTS = [
