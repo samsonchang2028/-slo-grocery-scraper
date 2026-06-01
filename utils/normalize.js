@@ -90,6 +90,10 @@ const CANONICAL_RULES = [
     [/\bnonfat\s*milk\b/,       'skim milk'],
     [/\bfat\s*free\s*milk\b/,   'skim milk'],
     [/\bwhole\s*milk\b/,        'whole milk'],
+    [/\begg\s*(noodle|roll|white|beater|salad|sandwich|scramble|product)/i, null],
+    [/\b(deviled|chocolate|italian|truffle)\s*\w*\s*eggs?\b/i, null],
+    [/\bjust\s*crack\s*an\s*egg\b/i, null],
+    [/\beggs?\b/,               'eggs'],
     [/\bchicken\s*breast\b/,    'chicken breast'],
     [/\bground\s*beef\b/,       'ground beef'],
     [/\bcheddar\s*cheese\b/,    'cheddar cheese'],
@@ -108,7 +112,10 @@ const CANONICAL_RULES = [
  */
 export function canonicalizeName(normalized) {
     for (const [pattern, canonical] of CANONICAL_RULES) {
-        if (pattern.test(normalized)) return canonical;
+        if (pattern.test(normalized)) {
+            if (canonical === null) return normalized; // exclusion rule — keep original
+            return canonical;
+        }
     }
     return normalized;
 }

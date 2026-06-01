@@ -26,6 +26,25 @@ const SCRAPERS = [
  *
  * Requirements: 5.1–5.4, 6.1–6.3, 7.1, 10.1–10.3
  */
+const CATEGORY_RULES = [
+    { pattern: '(milk|cheese|yogurt|butter|cream|egg|dairy|lactose)', category: 'Dairy' },
+    { pattern: '(chicken|beef|pork|salmon|tuna|turkey|steak|ground|sausage|bacon|shrimp|fish|meat)', category: 'Meat & Seafood' },
+    { pattern: '(apple|banana|orange|berry|berries|peach|grape|mango|avocado|lemon|lime|strawberry|blueberry)', category: 'Fruit' },
+    { pattern: '(lettuce|spinach|kale|broccoli|carrot|tomato|onion|garlic|pepper|celery|cucumber|zucchini|potato)', category: 'Vegetables' },
+    { pattern: '(bread|baguette|bagel|muffin|tortilla|roll|bun|sourdough|wheat|grain|einkorn)', category: 'Bakery' },
+    { pattern: '(pasta|rice|noodle|quinoa|oat|cereal|flour|penne|fusilli|basmati)', category: 'Grains & Pasta' },
+    { pattern: '(juice|water|soda|coffee|tea|drink|beverage|kombucha|lemonade)', category: 'Beverages' },
+    { pattern: '(chip|cracker|cookie|snack|pretzel|popcorn|granola|bar|chocolate)', category: 'Snacks' },
+    { pattern: '(soap|shampoo|detergent|paper towel|toilet|tissue|cleaning|toothpaste)', category: 'Household' },
+];
+
+function classifyCategory(name) {
+    for (const { pattern, category } of CATEGORY_RULES) {
+        if (new RegExp(pattern, 'i').test(name)) return category;
+    }
+    return 'Other';
+}
+
 export async function runScrape() {
     for (const { name, scrape, storeIdEnv } of SCRAPERS) {
         const storeId = process.env[storeIdEnv];
@@ -76,9 +95,10 @@ export async function runScrape() {
                 if (existing) {
                     productId = existing.id;
                 } else {
+                    const category = classifyCategory(normalizedName);
                     const { data: inserted, error: insertError } = await supabase
                         .from('products')
-                        .insert({ name: normalizedName, unit })
+                        .insert({ name: normalizedName, unit, category })
                         .select('id')
                         .single();
 
