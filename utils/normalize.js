@@ -48,10 +48,14 @@ const UNIT_PATTERNS = [
     [/\b(32\s*fl?\s*oz)\b/i,            '32 oz'],
     [/\b(16\s*fl?\s*oz)\b/i,            '16 oz'],
     [/\b(\d+)\s*fl?\s*oz\b/i,           (m) => `${m[1]} oz`],
+    [/\b(\d+(?:\.\d+)?)\s*ounces?\b/i,  (m) => `${m[1]} oz`],
     [/\b(\d+(?:\.\d+)?)\s*lb s?\b/i,    (m) => `${m[1]} lb`],
+    [/\b(\d+(?:\.\d+)?)\s*pounds?\b/i,  (m) => `${m[1]} lb`],
     [/\b(\d+(?:\.\d+)?)\s*kg\b/i,       (m) => `${m[1]} kg`],
     [/\b(\d+)\s*ct\b/i,                 (m) => `${m[1]} ct`],
     [/\b(\d+)\s*count\b/i,              (m) => `${m[1]} ct`],
+    [/\b(\d+)\s*ea\b/i,                 (m) => `${m[1]} ct`],
+    [/\b(\d+)\s*each\b/i,              (m) => `${m[1]} ct`],
     [/\b(\d+)\s*pack\b/i,               (m) => `${m[1]} pk`],
 ];
 
