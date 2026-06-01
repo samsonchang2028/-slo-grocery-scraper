@@ -5,7 +5,7 @@ import { scrape as scrapeSmartAndFinal } from './stores/smartandfinal.js';
 import { scrape as scrapeCalFresh } from './stores/calfresh.js';
 import { scrape as scrapeTraderJoes } from './stores/traderjoes.js';
 import { scrape as scrapeGroceryOutlet } from './stores/groceryoutlet.js';
-import { normalize, parsePrice } from './utils/normalize.js';
+import { normalize, parsePrice, extractUnit, canonicalizeName } from './utils/normalize.js';
 import supabase from './utils/supabase.js';
 
 const SCRAPERS = [
@@ -43,7 +43,8 @@ export async function runScrape() {
             let newProductsCount = 0;
 
             for (const raw of rawProducts) {
-                const normalizedName = normalize(raw.name);
+                const normalizedName = canonicalizeName(normalize(raw.name));
+                const unit = extractUnit(raw.name);
                 const price = parsePrice(raw.price);
                 const originalPrice = raw.originalPrice ? parsePrice(raw.originalPrice) : null;
 
@@ -58,14 +59,17 @@ export async function runScrape() {
                 }
 
                 let productId;
-                const { data: existing, error: lookupError } = await supabase
+                let query = supabase
                     .from('products')
                     .select('id')
-                    .ilike('name', normalizedName)
-                    .maybeSingle();
+                    .ilike('name', normalizedName);
+
+                query = unit ? query.eq('unit', unit) : query.is('unit', null);
+
+                const { data: existing, error: lookupError } = await query.maybeSingle();
 
                 if (lookupError) {
-                    console.error(`[scraper] DB lookup error for "${normalizedName}":`, lookupError.message);
+                    console.error(`[scraper] DB lookup error for "${normalizedName}" (${unit ?? 'no unit'}):`, lookupError.message);
                     continue;
                 }
 
@@ -74,12 +78,12 @@ export async function runScrape() {
                 } else {
                     const { data: inserted, error: insertError } = await supabase
                         .from('products')
-                        .insert({ name: normalizedName })
+                        .insert({ name: normalizedName, unit })
                         .select('id')
                         .single();
 
                     if (insertError) {
-                        console.error(`[scraper] Failed to insert product "${normalizedName}":`, insertError.message);
+                        console.error(`[scraper] Failed to insert product "${normalizedName}" (${unit ?? 'no unit'}):`, insertError.message);
                         continue;
                     }
 
